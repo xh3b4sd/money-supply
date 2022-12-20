@@ -1,0 +1,43 @@
+#
+# Do not edit. This file was generated via the "workflow" command line tool.
+# More information about the tool can be found at github.com/xh3b4sd/workflow.
+#
+#     workflow create golang
+#
+
+name: "go-build"
+
+on: "push"
+
+jobs:
+  go-build:
+    runs-on: "ubuntu-latest"
+    steps:
+
+      - name: "Setup Git Project"
+        uses: "actions/checkout@v3"
+
+      - name: "Setup Go Env"
+        uses: "actions/setup-go@v3"
+        with:
+          cache: true
+          go-version: "1.19.2"
+
+      - name: "Check Go Dependencies"
+        run: |
+          go mod tidy
+          git diff --exit-code
+
+      - name: "Check Go Tests"
+        run: |
+          go test ./... -race
+
+      - name: "Check Go Formatting"
+        run: |
+          test -z $(gofmt -l -s .)
+
+      - name: "Check Go Linters"
+        run: |
+          curl -LOs https://github.com/golangci/golangci-lint/releases/download/v1.50.0/golangci-lint-1.50.0-linux-amd64.tar.gz
+          tar -xzf golangci-lint-1.50.0-linux-amd64.tar.gz
+          ./golangci-lint-1.50.0-linux-amd64/golangci-lint run
